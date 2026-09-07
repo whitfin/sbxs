@@ -1,0 +1,18 @@
+services:
+  codex-worker:
+    init: true
+    platform: linux/amd64
+    restart: unless-stopped
+    volumes:
+      - codex:/home/codespace/.codex
+      - ${WORKSPACE_PATH}:/home/codespace/workspace
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+volumes:
+  codex:

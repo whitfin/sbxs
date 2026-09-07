@@ -1,5 +1,7 @@
+name: cw
+
 services:
-  codex-worker:
+  worker:
     init: true
     platform: linux/amd64
     restart: unless-stopped

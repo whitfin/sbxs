@@ -6,9 +6,9 @@ Docker's agent bases already supply Node.js, Python with `uv`, Go, Java, Git, an
 
 - A native C/C++ build toolchain: GCC, Clang, Make, CMake, Ninja, and `pkg-config`
 - Rust stable through `rustup`, including Cargo, Clippy, and `rustfmt`
-- Flutter stable with Linux desktop build support
+- Flutter stable and its bundled Dart SDK for package resolution and static analysis
 - Ruby, Ruby headers, and Bundler
-- Maven and Gradle
+- Maven and Gradle projects via `./gradlew`
 - SQLite CLI and development headers
 
 Codex, Claude Code, and OpenCode are reinstalled through their vendors' standalone Linux installers after their inherited global npm packages are removed. This fixes several issues (specifically with Codex) related to `remote-control` and generally keeps things more uniform.
@@ -52,7 +52,7 @@ $ sbx create --name claude --template sbxs:claude claude . "$HOME/.claude/settin
 $ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
 ```
 
-Successful builds on `main` publish the latest templates to GitHub Container Registry:
+Successful builds on `main` publish multi-platform (`linux/amd64` and `linux/arm64`) templates to GitHub Container Registry:
 
 ```bash
 $ sbx create --name codex --template ghcr.io/whitfin/sbxs:codex codex . "$HOME/.codex/config.toml:ro"

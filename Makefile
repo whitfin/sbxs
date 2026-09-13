@@ -22,7 +22,6 @@ check:
 			ruby --version; \
 			bundle --version; \
 			mvn --version; \
-			gradle --version; \
 			sqlite3 --version; \
 			flutter --version; \
 			case "$$AGENT_TO_CHECK" in \

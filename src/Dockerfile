@@ -37,8 +37,9 @@ RUN case "$AGENT" in \
         ;; \
       opencode) \
         curl -fsSL https://opencode.ai/install -o /tmp/install-agent.sh \
-        && OPENCODE_INSTALL_DIR=/home/agent/.local/bin \
-          bash /tmp/install-agent.sh --no-modify-path \
+        && bash /tmp/install-agent.sh --no-modify-path \
+        && mkdir -p /home/agent/.local/bin \
+        && ln -s /home/agent/.opencode/bin/opencode /home/agent/.local/bin/opencode \
         && rm /tmp/install-agent.sh \
         ;; \
     esac

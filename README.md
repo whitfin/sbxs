@@ -1,31 +1,61 @@
-# Codex Worker
+# sbxs
 
-This small project contains a Docker container designed for remote Codex work.
+A small set of extended templates for [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) with OpenCode, Codex and Claude Code.
 
-The container is based on a Microsoft Dev Container image, with the simple
-addition of Codex and automated launch/pairing of ChatGPT/Codex.
+Docker's agent bases already supply Node.js, Python with `uv`, Go, Java, Git, and a Docker engine. This template adds:
 
-## Getting Started
+- A native C/C++ build toolchain: GCC, Clang, Make, CMake, Ninja, and `pkg-config`
+- Rust stable through `rustup`, including Cargo, Clippy, and `rustfmt`
+- Flutter stable with Linux desktop build support
+- Ruby, Ruby headers, and Bundler
+- Maven and Gradle
+- SQLite CLI and development headers
 
-Copy the environment template and set your workspace path:
+Codex, Claude Code, and OpenCode are reinstalled through their vendors' standalone Linux installers after their inherited global npm packages are removed. This fixes several issues (specifically with Codex) related to `remote-control` and generally keeps things more uniform.
 
-```sh
-cp .env.example .env
-# Edit WORKSPACE_PATH in .env
+## Prerequisites
+
+Install Docker Desktop and its `sbx` CLI, then authenticate each agent you intend to use. Docker Sandboxes keeps its template image store separate from the ordinary Docker daemon, so locally built images must be exported and loaded before use.
+
+## Build the images
+
+Build, check, and load all three images for the host architecture:
+
+```console
+make build
+make check
+make load
 ```
 
-Then build and start the worker as shown below:
+`make build` runs the Bake matrix from `src`, so the three variants build together from `src/Dockerfile`. `make matrix` is an alias for the same operation. The resulting images are `sbxs:codex`, `sbxs:claude`, and `sbxs:opencode`.
 
-```sh
-docker compose up --build
+The matrix bases can also be overridden independently:
+
+```console
+CODEX_BASE_IMAGE=example/codex-base:latest \
+CLAUDE_BASE_IMAGE=example/claude-base:latest \
+OPENCODE_BASE_IMAGE=example/opencode-base:latest \
+  make build
 ```
 
-The first launch will display any pairing configuration and endpoints to open
-on your host, and once you do so you should be able to execute code remotely
-via ChatGPT/Codex on your host machine.
+Each override must remain paired with its corresponding agent because Docker Sandbox startup behavior comes from the base template.
 
-## Session State
+`make load` loads each image into Docker Sandboxes and deletes its temporary tar archive immediately afterward.
 
-A volume mount is used for the Codex authentication and/or session information,
-so handshakes only occur on first launch. If this volume is remove, you'll have
-to go ahead with a fresh handshake.
+## Run the images
+
+After building and loading the templates, create your initial sandboxes:
+
+```bash
+$ sbx create --name codex --template sbxs:codex codex . "$HOME/.codex/config.toml:ro"
+$ sbx create --name claude --template sbxs:claude claude . "$HOME/.claude/settings.json:ro"
+$ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
+```
+
+Then you can attach to your sandbox at any time:
+
+```bash
+$ sbx run codex
+```
+
+To replace a named sandbox after rebuilding its template, remove or rename the existing sandbox and run `sbx create` again. Existing sandboxes retain the filesystem created from the older template.

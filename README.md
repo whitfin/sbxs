@@ -55,7 +55,9 @@ $ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/
 Then you can attach to your sandbox at any time:
 
 ```bash
-$ sbx run codex
+$ sbx run --name codex
+$ sbx run --name claude
+$ sbx run --name opencode
 ```
 
 To replace a named sandbox after rebuilding its template, remove or rename the existing sandbox and run `sbx create` again. Existing sandboxes retain the filesystem created from the older template.

@@ -4,7 +4,7 @@ ARCHIVES := $(addprefix sbxs-,$(addsuffix .tar,$(AGENTS)))
 .PHONY: build matrix check export load
 
 build:
-	cd src && docker buildx bake
+	cd src && docker buildx bake --load $(AGENTS)
 
 matrix: build
 

@@ -42,6 +42,10 @@ Each override must remain paired with its corresponding agent because Docker San
 
 `make load` loads each image into Docker Sandboxes and deletes its temporary tar archive immediately afterward.
 
+## Continuous integration
+
+The GitHub Actions `Build` workflow runs on pushes, pull requests, and manual dispatch. It builds each Bake target in a separate Ubuntu runner job, caches build layers with GitHub Actions, and runs `make check` against the resulting image. CI builds Linux AMD64 images; images are not published to a registry.
+
 ## Run the images
 
 After building and loading the templates, create your initial sandboxes:

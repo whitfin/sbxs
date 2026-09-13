@@ -55,9 +55,9 @@ $ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/
 Successful builds on `main` publish the latest templates to GitHub Container Registry:
 
 ```bash
-$ sbx create --name codex --template ghcr.io/whitfin/codex-worker:codex codex . "$HOME/.codex/config.toml:ro"
-$ sbx create --name claude --template ghcr.io/whitfin/codex-worker:claude claude . "$HOME/.claude/settings.json:ro"
-$ sbx create --name opencode --template ghcr.io/whitfin/codex-worker:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
+$ sbx create --name codex --template ghcr.io/whitfin/sbxs:codex codex . "$HOME/.codex/config.toml:ro"
+$ sbx create --name claude --template ghcr.io/whitfin/sbxs:claude claude . "$HOME/.claude/settings.json:ro"
+$ sbx create --name opencode --template ghcr.io/whitfin/sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
 ```
 
 Then you can attach to your sandbox at any time:

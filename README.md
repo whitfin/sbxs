@@ -47,17 +47,17 @@ Each override must remain paired with its corresponding agent because Docker San
 After building and loading the templates, create your initial sandboxes:
 
 ```bash
-$ sbx create --name codex --template sbxs:codex codex . "$HOME/.codex/config.toml:ro"
-$ sbx create --name claude --template sbxs:claude claude . "$HOME/.claude/settings.json:ro"
-$ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
+$ sbx create --name codex --template sbxs:codex codex . "$HOME/.codex/config.toml:rw"
+$ sbx create --name claude --template sbxs:claude claude . "$HOME/.claude/settings.json:rw"
+$ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:rw"
 ```
 
 Successful builds on `main` publish multi-platform (`linux/amd64` and `linux/arm64`) templates to GitHub Container Registry:
 
 ```bash
-$ sbx create --name codex --template ghcr.io/whitfin/sbxs:codex codex . "$HOME/.codex/config.toml:ro"
-$ sbx create --name claude --template ghcr.io/whitfin/sbxs:claude claude . "$HOME/.claude/settings.json:ro"
-$ sbx create --name opencode --template ghcr.io/whitfin/sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:ro"
+$ sbx create --name codex --template ghcr.io/whitfin/sbxs:codex codex . "$HOME/.codex/config.toml:rw"
+$ sbx create --name claude --template ghcr.io/whitfin/sbxs:claude claude . "$HOME/.claude/settings.json:rw"
+$ sbx create --name opencode --template ghcr.io/whitfin/sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:rw"
 ```
 
 Then you can attach to your sandbox at any time:

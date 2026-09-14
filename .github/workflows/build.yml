@@ -51,10 +51,7 @@ jobs:
       - name: Publish image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          IMAGE: ghcr.io/${{ github.repository }}:${{ matrix.agent }}
+          REGISTRY: ghcr.io/${{ github.repository_owner }}/
         run: |
           cd src
-          docker buildx bake "${{ matrix.agent }}" --push \
-            --set "${{ matrix.agent }}.platform=linux/amd64" \
-            --set "${{ matrix.agent }}.platform=linux/arm64" \
-            --set "${{ matrix.agent }}.tags=$IMAGE"
+          docker buildx bake "${{ matrix.agent }}-publish" --push

@@ -2,12 +2,12 @@ variable "REGISTRY" {
   default = ""
 }
 
-variable "CODEX_BASE_IMAGE" {
-  default = "docker.io/docker/sandbox-templates:codex-docker"
-}
-
 variable "CLAUDE_BASE_IMAGE" {
   default = "docker.io/docker/sandbox-templates:claude-code-docker"
+}
+
+variable "CODEX_BASE_IMAGE" {
+  default = "docker.io/docker/sandbox-templates:codex-docker"
 }
 
 variable "OPENCODE_BASE_IMAGE" {
@@ -23,13 +23,11 @@ target "common" {
   dockerfile = "Dockerfile"
 }
 
-target "codex" {
-  inherits = ["common"]
-  tags     = ["${REGISTRY}sbxs:codex"]
-  args = {
-    AGENT      = "codex"
-    BASE_IMAGE = CODEX_BASE_IMAGE
-  }
+target "publish" {
+  platforms = [
+    "linux/amd64",
+    "linux/arm64",
+  ]
 }
 
 target "claude" {
@@ -41,6 +39,23 @@ target "claude" {
   }
 }
 
+target "claude-publish" {
+  inherits = ["claude", "publish"]
+}
+
+target "codex" {
+  inherits = ["common"]
+  tags     = ["${REGISTRY}sbxs:codex"]
+  args = {
+    AGENT      = "codex"
+    BASE_IMAGE = CODEX_BASE_IMAGE
+  }
+}
+
+target "codex-publish" {
+  inherits = ["codex", "publish"]
+}
+
 target "opencode" {
   inherits = ["common"]
   tags     = ["${REGISTRY}sbxs:opencode"]
@@ -48,4 +63,8 @@ target "opencode" {
     AGENT      = "opencode"
     BASE_IMAGE = OPENCODE_BASE_IMAGE
   }
+}
+
+target "opencode-publish" {
+  inherits = ["opencode", "publish"]
 }

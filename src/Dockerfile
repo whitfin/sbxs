@@ -78,31 +78,27 @@ ENV FLUTTER_HOME=/opt/flutter \
     FLUTTER_ROOT=/opt/flutter \
     PATH=/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:/home/agent/.cargo/bin:$PATH
 
-USER agent
-
-# rustup installs per-user and keeps future toolchain updates straightforward.
-RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh \
- && sh /tmp/rustup.sh -y --profile minimal --component clippy,rustfmt \
- && rm /tmp/rustup.sh
-
-USER root
-
 # Keep only the Flutter source and the Dart SDK bootstrapped by the Flutter
 # tool. Platform engines, Android tooling, and desktop build libraries are
 # intentionally omitted: this image is intended for package resolution and
 # static analysis, not for compiling or running Flutter applications.
 ARG FLUTTER_VERSION=3.47.4
 RUN git clone --depth 1 --branch "$FLUTTER_VERSION" \
-      https://github.com/flutter/flutter.git "$FLUTTER_HOME" \
- && git -C "$FLUTTER_HOME" switch -c stable \
- && git -C "$FLUTTER_HOME" update-ref refs/remotes/origin/stable HEAD \
- && git -C "$FLUTTER_HOME" config remote.origin.fetch \
-      '+refs/heads/stable:refs/remotes/origin/stable' \
- && git -C "$FLUTTER_HOME" config branch.stable.remote origin \
- && git -C "$FLUTTER_HOME" config branch.stable.merge refs/heads/stable \
- && chown -R agent:agent "$FLUTTER_HOME"
+    https://github.com/flutter/flutter.git "$FLUTTER_HOME" \
+    && git -C "$FLUTTER_HOME" switch -c stable \
+    && git -C "$FLUTTER_HOME" update-ref refs/remotes/origin/stable HEAD \
+    && git -C "$FLUTTER_HOME" config remote.origin.fetch \
+    '+refs/heads/stable:refs/remotes/origin/stable' \
+    && git -C "$FLUTTER_HOME" config branch.stable.remote origin \
+    && git -C "$FLUTTER_HOME" config branch.stable.merge refs/heads/stable \
+    && chown -R agent:agent "$FLUTTER_HOME"
 
 USER agent
+
+# rustup installs per-user and keeps future toolchain updates straightforward.
+RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh \
+ && sh /tmp/rustup.sh -y --profile minimal --component clippy,rustfmt \
+ && rm /tmp/rustup.sh
 
 RUN flutter config --no-analytics \
  && flutter --version \

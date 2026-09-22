@@ -2,9 +2,7 @@
 
 A small set of extended templates for [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) with OpenCode, Codex and Claude Code.
 
-Docker Sandbox's agent images already supply Node.js, Python, Go, Java, Git, and a Docker engine.
-
-The templates built from this repository add:
+The templates built from this repository add the following to the `sbx` base images:
 
 - A native C/C++ build toolchain: GCC, Clang, Make, CMake, Ninja, and `pkg-config`
 - Rust stable through `rustup`, including Cargo, Clippy, and `rustfmt`

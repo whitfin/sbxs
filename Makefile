@@ -1,17 +1,26 @@
 SBXS_AGENTS ?= codex claude opencode
 SBXS_ARCHIVES := $(addprefix sbxs-,$(addsuffix .tar,$(SBXS_AGENTS)))
 
-.PHONY: build matrix check verify export load
+SBXS_VERSION ?= latest
+SBXS_REGISTRY ?=
+SBXS_REGISTRY := $(patsubst %/,%,$(SBXS_REGISTRY))
+
+ifneq ($(strip $(SBXS_REGISTRY)),)
+SBXS_REGISTRY := $(SBXS_REGISTRY)/
+endif
+
+.PHONY: build check verify load
 
 build:
-	cd src && docker buildx bake --load $(SBXS_AGENTS)
-
-matrix: build
+	cd src && \
+		SBXS_VERSION="$(SBXS_VERSION)" \
+		SBXS_REGISTRY="$(SBXS_REGISTRY)" \
+		docker buildx bake --load $(SBXS_AGENTS)
 
 check:
 	@set -eu; \
 	for agent in $(SBXS_AGENTS); do \
-		docker run --rm --env SBX_AGENT="$$agent" "sbxs:$$agent" bash -lc '\
+		docker run --rm --env SBX_AGENT="$$agent" "$(SBXS_REGISTRY)sbxs/$$agent:$(SBXS_VERSION)" bash -lc '\
 			git --version; \
 			node --version; \
 			python3 --version; \
@@ -46,21 +55,18 @@ check:
 			esac'; \
 	done
 
-verify: build
-	$(MAKE) check SBXS_AGENTS="$(SBXS_AGENTS)"
-
-export:
-	@set -eu; \
-	for agent in $(SBXS_AGENTS); do \
-		docker image save --output "sbxs-$$agent.tar" "sbxs:$$agent"; \
-	done
-
 load:
 	@set -eu; \
 	trap 'rm -f -- $(SBXS_ARCHIVES)' EXIT HUP INT TERM; \
 	for agent in $(SBXS_AGENTS); do \
 		archive="sbxs-$$agent.tar"; \
-		docker image save --output "$$archive" "sbxs:$$agent"; \
+		docker image save --output "$$archive" "$(SBXS_REGISTRY)sbxs/$$agent:$(SBXS_VERSION)"; \
 		sbx template load "$$archive"; \
 		rm -f -- "$$archive"; \
 	done
+
+verify: build
+	$(MAKE) check \
+		SBXS_AGENTS="$(SBXS_AGENTS)" \
+		SBXS_REGISTRY="$(SBXS_REGISTRY)" \
+		SBXS_VERSION="$(SBXS_VERSION)"

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build ${{ matrix.agent }}
+    name: Build ${{ matrix.agent }} sandbox
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

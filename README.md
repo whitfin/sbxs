@@ -8,18 +8,15 @@ Docker's agent bases already supply Node.js, Python with `uv`, Go, Java, Git, an
 - Rust stable through `rustup`, including Cargo, Clippy, and `rustfmt`
 - Flutter stable and its bundled Dart SDK for package resolution and static analysis
 - Ruby, Ruby headers, and Bundler
+- Elixir, Erlang/OTP, Hex, and Rebar
 - Maven and Gradle projects via `./gradlew`
 - SQLite CLI and development headers
 
 Codex, Claude Code, and OpenCode are reinstalled through their vendors' standalone Linux installers after their inherited global npm packages are removed. This fixes several issues (specifically with Codex) related to `remote-control` and generally keeps things more uniform.
 
-## Prerequisites
-
-Install Docker Desktop and its `sbx` CLI, then authenticate each agent you intend to use. Docker Sandboxes keeps its template image store separate from the ordinary Docker daemon, so locally built images must be exported and loaded before use.
-
 ## Build the images
 
-Build, check, and load all three images for the host architecture:
+Build, verify, and load all images for the host architecture:
 
 ```bash
 $ make build
@@ -27,20 +24,18 @@ $ make check
 $ make load
 ```
 
-`make build` runs the Bake matrix from `src`, so the three variants build together from `src/Dockerfile`. `make matrix` is an alias for the same operation. The resulting images are `sbxs:codex`, `sbxs:claude`, and `sbxs:opencode`.
-
-The matrix bases can also be overridden independently:
+This will create `sbxs:<agent>` images for each supported agent. You can opt to build only for specific agents, or with custom base images and registries:
 
 ```bash
-CODEX_BASE_IMAGE=example/codex-base:latest \
-CLAUDE_BASE_IMAGE=example/claude-base:latest \
-OPENCODE_BASE_IMAGE=example/opencode-base:latest \
+SBXS_AGENTS="claude codex" \
+SBXS_REGISTRY=ghcr.io/whitfin \
+SBXS_CODEX_BASE_IMAGE=example/codex-base:latest \
+SBXS_CLAUDE_BASE_IMAGE=example/claude-base:latest \
+SBXS_OPENCODE_BASE_IMAGE=example/opencode-base:latest \
   make build
 ```
 
-Each override must remain paired with its corresponding agent because Docker Sandbox startup behavior comes from the base template.
-
-`make load` loads each image into Docker Sandboxes and deletes its temporary tar archive immediately afterward.
+By default, all supported agents are built using the latest Docker Sandbox image (e.g. `sandbox-templates:codex-docker`).
 
 ## Run the images
 

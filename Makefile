@@ -1,17 +1,17 @@
-AGENTS := codex claude opencode
-ARCHIVES := $(addprefix sbxs-,$(addsuffix .tar,$(AGENTS)))
+SBXS_AGENTS ?= codex claude opencode
+SBXS_ARCHIVES := $(addprefix sbxs-,$(addsuffix .tar,$(SBXS_AGENTS)))
 
-.PHONY: build matrix check export load
+.PHONY: build matrix check verify export load
 
 build:
-	cd src && docker buildx bake --load $(AGENTS)
+	cd src && docker buildx bake --load $(SBXS_AGENTS)
 
 matrix: build
 
 check:
 	@set -eu; \
-	for agent in $(AGENTS); do \
-		docker run --rm --env AGENT_TO_CHECK="$$agent" "sbxs:$$agent" bash -lc '\
+	for agent in $(SBXS_AGENTS); do \
+		docker run --rm --env SBX_AGENT="$$agent" "sbxs:$$agent" bash -lc '\
 			git --version; \
 			node --version; \
 			python3 --version; \
@@ -22,9 +22,12 @@ check:
 			ruby --version; \
 			bundle --version; \
 			mvn --version; \
+			elixir --version; \
+			mix --version; \
+			erl -noshell -eval "io:format(\"OTP ~s~n\", [erlang:system_info(otp_release)]), halt()."; \
 			sqlite3 --version; \
 			flutter --version; \
-			case "$$AGENT_TO_CHECK" in \
+			case "$$SBX_AGENT" in \
 				codex) \
 					test -x /home/agent/.local/bin/codex; \
 					test ! -e /usr/local/share/npm-global/lib/node_modules/@openai/codex; \
@@ -43,16 +46,19 @@ check:
 			esac'; \
 	done
 
+verify: build
+	$(MAKE) check SBXS_AGENTS="$(SBXS_AGENTS)"
+
 export:
 	@set -eu; \
-	for agent in $(AGENTS); do \
+	for agent in $(SBXS_AGENTS); do \
 		docker image save --output "sbxs-$$agent.tar" "sbxs:$$agent"; \
 	done
 
 load:
 	@set -eu; \
-	trap 'rm -f -- $(ARCHIVES)' EXIT HUP INT TERM; \
-	for agent in $(AGENTS); do \
+	trap 'rm -f -- $(SBXS_ARCHIVES)' EXIT HUP INT TERM; \
+	for agent in $(SBXS_AGENTS); do \
 		archive="sbxs-$$agent.tar"; \
 		docker image save --output "$$archive" "sbxs:$$agent"; \
 		sbx template load "$$archive"; \

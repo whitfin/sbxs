@@ -59,6 +59,8 @@ RUN apt update \
         clang \
         cmake \
         curl \
+        elixir \
+        erlang-dev \
         git \
         liblzma-dev \
         libsqlite3-dev \
@@ -106,6 +108,9 @@ ENV UV_PROJECT_ENVIRONMENT=/home/agent/.venv \
 RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh \
  && sh /tmp/rustup.sh -y --profile minimal --component clippy,rustfmt \
  && rm /tmp/rustup.sh
+
+RUN mix local.hex --force \
+ && mix local.rebar --force
 
 RUN flutter config --no-analytics \
  && flutter --version \

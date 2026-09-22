@@ -1,58 +1,15 @@
 # syntax=docker/dockerfile:1.7
-
 ARG BASE_IMAGE=docker.io/docker/sandbox-templates:codex-docker
-FROM ${BASE_IMAGE} AS agent
-
-ARG AGENT=codex
+FROM ${BASE_IMAGE}
+USER root
 
 LABEL \
-    org.opencontainers.image.title="Sandbox Worker" \
+    org.opencontainers.image.title="sbxs" \
     org.opencontainers.image.source="https://github.com/whitfin/sbxs" \
-    org.opencontainers.image.description="A batteries-included Docker Sandbox agent template"
+    org.opencontainers.image.description="A Docker Sandbox agent template with extended toolchains"
 
-USER root
-
-# Remove inherited npm packages before installing each agent's standalone
-# Linux distribution as the agent user below.
-RUN case "$AGENT" in \
-        codex) npm uninstall --global @openai/codex ;; \
-        claude) npm uninstall --global @anthropic-ai/claude-code ;; \
-        opencode) npm uninstall --global opencode-ai ;; \
-        *) echo "Unsupported AGENT: $AGENT (expected codex, claude, or opencode)" >&2; exit 1 ;; \
-    esac \
- && rm -rf /root/.npm /home/agent/.npm
-
-USER agent
-
-# The official installers write standalone releases to the agent's home and
-# expose them through /home/agent/.local/bin.
-RUN case "$AGENT" in \
-        codex) \
-            curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/install-agent.sh \
-                && CODEX_NON_INTERACTIVE=1 sh /tmp/install-agent.sh \
-                && rm /tmp/install-agent.sh \
-            ;; \
-        claude) \
-            curl -fsSL https://claude.ai/install.sh -o /tmp/install-agent.sh \
-         && bash /tmp/install-agent.sh \
-         && rm /tmp/install-agent.sh \
-            ;; \
-        opencode) \
-            curl -fsSL https://opencode.ai/install -o /tmp/install-agent.sh \
-         && bash /tmp/install-agent.sh --no-modify-path \
-         && mkdir -p /home/agent/.local/bin \
-         && ln -s /home/agent/.opencode/bin/opencode /home/agent/.local/bin/opencode \
-         && rm /tmp/install-agent.sh \
-            ;; \
-    esac \
- && rm -rf /home/agent/.npm
-
-FROM agent AS worker
-
-USER root
-
-# Native compilation, Ruby, JVM build tools, and SQLite. Projects using Gradle
-# are expected to provide the standard Gradle Wrapper (`./gradlew`).
+# Install all toolchains we can fetch directly via apt. It's generally better
+# to pull from apt when possible because it's more resilient to base image changes.
 RUN apt update \
  && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
         build-essential \
@@ -77,6 +34,7 @@ RUN apt update \
         zip \
  && rm -rf /var/lib/apt/lists/*
 
+# Configure Flutter toolchain paths
 ENV FLUTTER_HOME=/opt/flutter \
     FLUTTER_ROOT=/opt/flutter \
     PATH=/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:/home/agent/.cargo/bin:$PATH
@@ -94,26 +52,54 @@ RUN git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/f
  && git -C "$FLUTTER_HOME" config branch.stable.merge refs/heads/stable \
  && chown -R agent:agent "$FLUTTER_HOME"
 
+# Switch to the working user for future steps, starting with disabling
+# Flutter's automatic analytics (even though they'd be sandbox blocked...).
 USER agent
+RUN mkdir -p /home/agent/.config/flutter \
+ && printf '%s\n' '{"analytics-enabled": false}' > /home/agent/.config/flutter/settings
+
+# Install the coding agent directly through the initial installers so they
+# live in the default locations rather than via npm.
+ARG AGENT=opencode
+RUN case "$AGENT" in \
+        codex) \
+            npm uninstall --global @openai/codex \
+         && curl -fsSL https://chatgpt.com/codex/install.sh -o /tmp/install-agent.sh \
+         && CODEX_NON_INTERACTIVE=1 sh /tmp/install-agent.sh \
+         && rm /tmp/install-agent.sh \
+            ;; \
+        claude) \
+            npm uninstall --global @anthropic-ai/claude-code \
+         && curl -fsSL https://claude.ai/install.sh -o /tmp/install-agent.sh \
+         && bash /tmp/install-agent.sh \
+         && rm /tmp/install-agent.sh \
+            ;; \
+        opencode) \
+            npm uninstall --global opencode-ai \
+         && curl -fsSL https://opencode.ai/install -o /tmp/install-agent.sh \
+         && bash /tmp/install-agent.sh --no-modify-path \
+         && mkdir -p /home/agent/.local/bin \
+         && ln -s /home/agent/.opencode/bin/opencode /home/agent/.local/bin/opencode \
+         && rm /tmp/install-agent.sh \
+            ;; \
+        *) \
+            echo "Unsupported agent: $AGENT (expected codex, claude, or opencode)" >&2 \
+         && exit 1 ;; \
+    esac \
+ && rm -rf /home/agent/.npm
 
 # Keep the Python environment outside the runtime-mounted workspace so it is
 # available to sandbox workers regardless of which project is mounted.
-RUN uv venv --python python3 --seed /home/agent/.venv
-
 ENV UV_PROJECT_ENVIRONMENT=/home/agent/.venv \
     VIRTUAL_ENV=/home/agent/.venv \
     PATH=/home/agent/.venv/bin:$PATH
+RUN uv venv --python python3 --seed $UV_PROJECT_ENVIRONMENT
 
-# rustup installs per-user and keeps future toolchain updates straightforward.
+# Install rustup as well as common components to keep Rust installation simple
 RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh \
  && sh /tmp/rustup.sh -y --profile minimal --component clippy,rustfmt \
  && rm /tmp/rustup.sh
 
+# Pre-cache Hex and Rebar so they're always available
 RUN mix local.hex --force \
  && mix local.rebar --force
-
-RUN flutter config --no-analytics \
- && flutter --version \
- && dart --version
-
-WORKDIR /workspace

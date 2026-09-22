@@ -35,6 +35,7 @@ check:
 			mix --version; \
 			erl -noshell -eval "io:format(\"OTP ~s~n\", [erlang:system_info(otp_release)]), halt()."; \
 			sqlite3 --version; \
+            dart --version; \
 			flutter --version; \
 			case "$$SBX_AGENT" in \
 				codex) \

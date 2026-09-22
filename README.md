@@ -55,7 +55,7 @@ $ sbx create --name claude --template ghcr.io/whitfin/sbxs/claude:latest claude 
 $ sbx create --name opencode --template ghcr.io/whitfin/sbxs/opencode:latest opencode "$PWD" "$HOME/.config/opencode/opencode.json:rw"
 ```
 
-For a pinned release, replace `latest` with a published tag such as `1.2.3`. Then you can attach to your sandbox at any time:
+Then you can attach to your sandbox at any time:
 
 ```bash
 $ sbx run --name codex

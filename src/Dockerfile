@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE} AS agent
 
 ARG AGENT=codex
 
-LABEL
+LABEL \
     org.opencontainers.image.title="Sandbox Worker" \
     org.opencontainers.image.source="https://github.com/whitfin/sbxs" \
     org.opencontainers.image.description="A batteries-included Docker Sandbox agent template"

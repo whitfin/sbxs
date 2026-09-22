@@ -9,7 +9,7 @@ ifneq ($(strip $(SBXS_REGISTRY)),)
 SBXS_REGISTRY := $(SBXS_REGISTRY)/
 endif
 
-.PHONY: build check verify load
+.PHONY: build check install
 
 build:
 	cd src && \
@@ -56,7 +56,7 @@ check:
 			esac'; \
 	done
 
-load:
+install:
 	@set -eu; \
 	trap 'rm -f -- $(SBXS_ARCHIVES)' EXIT HUP INT TERM; \
 	for agent in $(SBXS_AGENTS); do \
@@ -66,8 +66,3 @@ load:
 		rm -f -- "$$archive"; \
 	done
 
-verify: build
-	$(MAKE) check \
-		SBXS_AGENTS="$(SBXS_AGENTS)" \
-		SBXS_REGISTRY="$(SBXS_REGISTRY)" \
-		SBXS_VERSION="$(SBXS_VERSION)"

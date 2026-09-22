@@ -2,7 +2,9 @@
 
 A small set of extended templates for [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) with OpenCode, Codex and Claude Code.
 
-Docker's agent bases already supply Node.js, Python with `uv`, Go, Java, Git, and a Docker engine. This template adds:
+Docker Sandbox's agent images already supply Node.js, Python, Go, Java, Git, and a Docker engine.
+
+The templates built from this repository add:
 
 - A native C/C++ build toolchain: GCC, Clang, Make, CMake, Ninja, and `pkg-config`
 - Rust stable through `rustup`, including Cargo, Clippy, and `rustfmt`
@@ -14,53 +16,39 @@ Docker's agent bases already supply Node.js, Python with `uv`, Go, Java, Git, an
 
 Codex, Claude Code, and OpenCode are reinstalled through their vendors' standalone Linux installers after their inherited global npm packages are removed. This fixes several issues (specifically with Codex) related to `remote-control` and generally keeps things more uniform.
 
+## Starting a sandbox
+
+You can create a sandbox from the latest published image very easily:
+
+```shell
+sbx run -t ghcr.io/whitfin/sbxs/codex:latest codex
+sbx run -t ghcr.io/whitfin/sbxs/claude:latest claude
+sbx run -t ghcr.io/whitfin/sbxs/opencode:latest opencode
+```
+
+The GHCR images support both `linux/amd64` and `linux/arm64` and are published by CI from main.
+
 ## Build the images
 
-Build, verify, and load all images for the host architecture:
+If you want to customize and build images for yourself:
 
-```bash
-$ make build
-$ make check
-$ make load
+```shell
+make build
+make install
 ```
 
-This creates local `sbxs/<agent>:latest` images for each supported agent. You can build only specific agents or use custom base images:
+You can build for specific agents or using custom base images via environment and/or Make variables:
 
-```bash
-SBXS_AGENTS="claude codex" \
-SBXS_REGISTRY=ghcr.io/whitfin \
-SBXS_CODEX_BASE_IMAGE=example/codex-base:latest \
-SBXS_CLAUDE_BASE_IMAGE=example/claude-base:latest \
-SBXS_OPENCODE_BASE_IMAGE=example/opencode-base:latest \
-  make build
+```shell
+export SBXS_AGENTS="claude codex"
+export SBXS_REGISTRY="ghcr.io/whitfin"
+export SBXS_CODEX_BASE_IMAGE="example/codex-base:latest"
+export SBXS_CLAUDE_BASE_IMAGE="example/claude-base:latest"
+export SBXS_OPENCODE_BASE_IMAGE="example/opencode-base:latest"
 ```
 
-By default, all supported agents are built using the latest Docker Sandbox image (e.g. `sandbox-templates:codex-docker`).
+By default, all supported agents are built using the latest Docker Sandbox image (e.g. `sandbox-templates:codex-docker`) and will be tagged in the form `sbxs/<agent>:latest`.
 
-## Run the images
+## Contributions
 
-After building and loading the templates, create your initial sandboxes:
-
-```bash
-$ sbx create --name codex --template sbxs/codex:latest codex "$PWD" "$HOME/.codex/config.toml:rw"
-$ sbx create --name claude --template sbxs/claude:latest claude "$PWD" "$HOME/.claude/settings.json:rw"
-$ sbx create --name opencode --template sbxs/opencode:latest opencode "$PWD" "$HOME/.config/opencode/opencode.json:rw"
-```
-
-Successful builds on `main` publish multi-platform (`linux/amd64` and `linux/arm64`) templates with the `latest` tag.
-
-```bash
-$ sbx create --name codex --template ghcr.io/whitfin/sbxs/codex:latest codex "$PWD" "$HOME/.codex/config.toml:rw"
-$ sbx create --name claude --template ghcr.io/whitfin/sbxs/claude:latest claude "$PWD" "$HOME/.claude/settings.json:rw"
-$ sbx create --name opencode --template ghcr.io/whitfin/sbxs/opencode:latest opencode "$PWD" "$HOME/.config/opencode/opencode.json:rw"
-```
-
-Then you can attach to your sandbox at any time:
-
-```bash
-$ sbx run --name codex
-$ sbx run --name claude
-$ sbx run --name opencode
-```
-
-To replace a named sandbox after rebuilding its template, remove or rename the existing sandbox and run `sbx create` again. Existing sandboxes retain the filesystem created from the older template.
+Any feedback or contributions are appreciated; this repository is deliberately pretty opinionated as I'm mainly just sharing my personal setup, but I'm happy to expand and adjust things if they'd be useful to a wider audience.

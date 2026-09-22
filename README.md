@@ -24,7 +24,7 @@ $ make check
 $ make load
 ```
 
-This will create `sbxs:<agent>` images for each supported agent. You can opt to build only for specific agents, or with custom base images and registries:
+This creates local `sbxs:<agent>` images for each supported agent. You can build only specific agents or use custom base images:
 
 ```bash
 SBXS_AGENTS="claude codex" \
@@ -42,20 +42,20 @@ By default, all supported agents are built using the latest Docker Sandbox image
 After building and loading the templates, create your initial sandboxes:
 
 ```bash
-$ sbx create --name codex --template sbxs:codex codex . "$HOME/.codex/config.toml:rw"
-$ sbx create --name claude --template sbxs:claude claude . "$HOME/.claude/settings.json:rw"
-$ sbx create --name opencode --template sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:rw"
+$ sbx create --name codex --template sbxs/codex codex . "$HOME/.codex/config.toml:rw"
+$ sbx create --name claude --template sbxs/claude claude . "$HOME/.claude/settings.json:rw"
+$ sbx create --name opencode --template sbxs/opencode opencode . "$HOME/.config/opencode/opencode.json:rw"
 ```
 
-Successful builds on `main` publish multi-platform (`linux/amd64` and `linux/arm64`) templates to GitHub Container Registry:
+Successful builds on `main` publish multi-platform (`linux/amd64` and `linux/arm64`) templates with the `latest` tag.
 
 ```bash
-$ sbx create --name codex --template ghcr.io/whitfin/sbxs:codex codex . "$HOME/.codex/config.toml:rw"
-$ sbx create --name claude --template ghcr.io/whitfin/sbxs:claude claude . "$HOME/.claude/settings.json:rw"
-$ sbx create --name opencode --template ghcr.io/whitfin/sbxs:opencode opencode . "$HOME/.config/opencode/opencode.json:rw"
+$ sbx create --name codex --template ghcr.io/whitfin/sbxs/codex:latest codex "$PWD" "$HOME/.codex/config.toml:rw"
+$ sbx create --name claude --template ghcr.io/whitfin/sbxs/claude:latest claude "$PWD" "$HOME/.claude/settings.json:rw"
+$ sbx create --name opencode --template ghcr.io/whitfin/sbxs/opencode:latest opencode "$PWD" "$HOME/.config/opencode/opencode.json:rw"
 ```
 
-Then you can attach to your sandbox at any time:
+For a pinned release, replace `latest` with a published tag such as `1.2.3`. Then you can attach to your sandbox at any time:
 
 ```bash
 $ sbx run --name codex

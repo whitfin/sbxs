@@ -55,8 +55,8 @@ RUN git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/f
 # Switch to the working user for future steps, starting with disabling
 # Flutter's automatic analytics (even though they'd be sandbox blocked...).
 USER agent
-RUN mkdir -p /home/agent/.config/flutter \
- && printf '%s\n' '{"analytics-enabled": false}' > /home/agent/.config/flutter/settings
+RUN flutter config --no-analytics \
+ && flutter precache --linux
 
 # Install the coding agent directly through the initial installers so they
 # live in the default locations rather than via npm.
@@ -103,3 +103,7 @@ RUN curl --proto '=https' --tlsv1.2 -fsS https://sh.rustup.rs -o /tmp/rustup.sh 
 # Pre-cache Hex and Rebar so they're always available
 RUN mix local.hex --force \
  && mix local.rebar --force
+
+# Create our toolchain verification script for testing.
+COPY --chmod=0755 docker-test /usr/local/bin/sbxs-check
+ENV SBXS_AGENT=$AGENT

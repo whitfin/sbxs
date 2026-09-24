@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+failures=0
+
+printf 'Toolchain check (%s)\n' "$SBXS_AGENT"
+printf '%-12s %s\n' '------------' '----------------------------------------'
+
+check_version() {
+    local name="$1"
+    shift
+    local output status version
+
+    if output="$("$@" 2>&1)"; then
+        case "$name" in
+            dart)
+                version="$(printf '%s\n' "$output" | awk '/^Dart SDK version:/ { print; exit }')"
+                ;;
+            flutter)
+                version="$(printf '%s\n' "$output" | awk '/^Flutter [0-9]/ { print; exit }')"
+                ;;
+            *)
+                version="$(printf '%s\n' "$output" | awk '/^Picked up JAVA_TOOL_OPTIONS:/ { next } NF { print; exit }')"
+                ;;
+        esac
+
+        if [[ -n "$version" ]]; then
+            printf '✓ %-10s %s\n' "$name" "$version"
+        else
+            printf '✗ %-10s no version reported\n' "$name"
+            while IFS= read -r line; do
+                printf '    %s\n' "$line"
+            done <<< "$output"
+            failures=$((failures + 1))
+        fi
+    else
+        status=$?
+        printf '✗ %-10s failed (exit %s)\n' "$name" "$status"
+        if [[ -n "$output" ]]; then
+            while IFS= read -r line; do
+                printf '    %s\n' "$line"
+            done <<< "$output"
+        fi
+        failures=$((failures + 1))
+    fi
+}
+
+check_version git git --version
+check_version node node --version
+check_version python python3 --version
+check_version go go version
+check_version java java -version
+check_version rustc rustc --version
+check_version cargo cargo --version
+check_version ruby ruby --version
+check_version bundle bundle --version
+check_version maven mvn --version
+check_version elixir elixir --version
+check_version mix mix --version
+check_version erlang erl -noshell -eval 'io:format("OTP ~s~n", [erlang:system_info(otp_release)]), halt().'
+check_version sqlite sqlite3 --version
+check_version dart dart --version
+check_version flutter flutter --version
+check_version "$SBXS_AGENT" "$SBXS_AGENT" --version
+
+printf '\n'
+exit "$failures"

@@ -54,6 +54,11 @@ check_version rustc rustc --version
 check_version cargo cargo --version
 check_version ruby ruby --version
 check_version bundle bundle --version
+check_version lua lua -v
+check_version luajit luajit -v
+check_version luarocks luarocks --version
+check_version php php --version
+check_version composer composer --version
 check_version maven mvn --version
 check_version elixir elixir --version
 check_version mix mix --version

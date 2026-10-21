@@ -15,15 +15,22 @@ RUN apt update \
         build-essential \
         clang \
         cmake \
+        composer \
         curl \
         elixir \
         erlang-dev \
         git \
+        liblua5.1-0-dev \
+        libluajit-5.1-dev \
         liblzma-dev \
         libsqlite3-dev \
         libssl-dev \
+        lua5.1 \
+        luajit \
+        luarocks \
         maven \
         ninja-build \
+        php-cli \
         pkg-config \
         ruby-bundler \
         ruby-dev \

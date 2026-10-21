@@ -11,6 +11,8 @@ The templates built from this repository add the following to the `sbx` base ima
 - Elixir, Erlang/OTP, Hex, and Rebar
 - Maven and Gradle projects via `./gradlew`
 - SQLite CLI and development headers
+- Lua 5.1, LuaJIT, and LuaRocks
+- Composer and the PHP CLI
 
 Codex, Claude Code, and OpenCode are reinstalled through their vendors' standalone Linux installers after their inherited global npm packages are removed. This fixes several issues (specifically with Codex) related to `remote-control` and generally keeps things more uniform.
 

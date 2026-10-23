@@ -37,6 +37,7 @@ RUN apt update \
         ruby-full \
         sqlite3 \
         unzip \
+        vim \
         xz-utils \
         zip \
  && rm -rf /var/lib/apt/lists/*
